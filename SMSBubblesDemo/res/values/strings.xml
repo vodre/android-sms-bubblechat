@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">ChatHeadDemo</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+
+    <string name="chathead_text">Tara ra ra ra HEY! tara rara...</string>
+    <string name="bubble_text">Tienes un SMS</string>
+</resources>
