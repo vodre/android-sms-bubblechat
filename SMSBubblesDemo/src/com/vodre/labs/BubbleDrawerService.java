@@ -28,6 +28,7 @@ public class BubbleDrawerService extends Service {
 	private TextView mChatTextView;
 	private TextView mChatContactTextView;
 	private LinearLayout mLayout;
+	private LinearLayout layout_text;
 	private static int screenWidth;
 	private static int screenHeight;
 	private static String _message = "";
@@ -65,6 +66,11 @@ public class BubbleDrawerService extends Service {
 		mChatContactTextView = (TextView) mChatHead.findViewById(R.id.contactName_textview);
 		mChatTextView = (TextView) mChatHead.findViewById(R.id.text_textview);
 		mLayout = (LinearLayout) mChatHead.findViewById(R.id.chathead_linearlayout);
+		layout_text = (LinearLayout)mChatHead.findViewById(R.id.layout_text);
+		
+		
+		mChatContactTextView.setText(_senderNum + ": ");
+		mChatTextView.setText(_message);
 
 		final WindowManager.LayoutParams parameters = new WindowManager.LayoutParams(
 				WindowManager.LayoutParams.WRAP_CONTENT, // Width
@@ -96,8 +102,7 @@ public class BubbleDrawerService extends Service {
 					return true;
 
 				case MotionEvent.ACTION_MOVE:
-					mChatContactTextView.setVisibility(View.GONE);
-					mChatTextView.setVisibility(View.GONE);
+					layout_text.setVisibility(View.GONE);
 					parameters.x = initialX
 							+ (int) (event.getRawX() - initialTouchX);
 					parameters.y = initialY
@@ -108,27 +113,21 @@ public class BubbleDrawerService extends Service {
 				case MotionEvent.ACTION_UP:
 
 					if (parameters.y > screenHeight * 0.6) {
-						mChatHead.setVisibility(View.GONE);
+						layout_text.setVisibility(View.GONE);
 						stopSelf();
 					}
 
 					if (parameters.x < screenWidth / 2) {
 						mLayout.removeAllViews();
 						mLayout.addView(mChaContactImageView);
-						mLayout.addView(mChatContactTextView);
-						mChatContactTextView.setVisibility(View.VISIBLE);
-						mChatContactTextView.setText(_senderNum);
-						mChatTextView.setVisibility(View.VISIBLE);
-						mChatTextView.setText(_message);
+						mLayout.addView(layout_text);
+						layout_text.setVisibility(View.VISIBLE);
 
 					} else { // Set textView to left of image
 						mLayout.removeAllViews();
-						mLayout.addView(mChatContactTextView);
+						mLayout.addView(layout_text);
 						mLayout.addView(mChaContactImageView);
-						mChatContactTextView.setVisibility(View.VISIBLE);
-						mChatContactTextView.setText(_senderNum);
-						mChatTextView.setVisibility(View.VISIBLE);
-						mChatTextView.setText(_message);
+						layout_text.setVisibility(View.VISIBLE);
 					}
 					return true;
 
