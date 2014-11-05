@@ -24,8 +24,9 @@ public class BubbleDrawerService extends Service {
 
 	private WindowManager mWindowManager;
 	private View mChatHead;
-	private ImageView mChatHeadImageView;
-	private TextView mChatHeadTextView;
+	private ImageView mChaContactImageView;
+	private TextView mChatTextView;
+	private TextView mChatContactTextView;
 	private LinearLayout mLayout;
 	private static int screenWidth;
 	private static int screenHeight;
@@ -59,9 +60,10 @@ public class BubbleDrawerService extends Service {
 		screenHeight = size.y;
 
 		LayoutInflater inflater = LayoutInflater.from(this);
-		mChatHead = inflater.inflate(R.layout.chathead_view, null);
-		mChatHeadImageView = (ImageView) mChatHead.findViewById(R.id.chathead_imageview);
-		mChatHeadTextView = (TextView) mChatHead.findViewById(R.id.chathead_textview);
+		mChatHead = inflater.inflate(R.layout.chatbubble_view, null);
+		mChaContactImageView = (ImageView) mChatHead.findViewById(R.id.chathead_imageview);
+		mChatContactTextView = (TextView) mChatHead.findViewById(R.id.contactName_textview);
+		mChatTextView = (TextView) mChatHead.findViewById(R.id.text_textview);
 		mLayout = (LinearLayout) mChatHead.findViewById(R.id.chathead_linearlayout);
 
 		final WindowManager.LayoutParams parameters = new WindowManager.LayoutParams(
@@ -77,7 +79,7 @@ public class BubbleDrawerService extends Service {
 		parameters.gravity = Gravity.TOP | Gravity.LEFT;
 
 		// Drag support!
-		mChatHeadImageView.setOnTouchListener(new OnTouchListener() {
+		mChaContactImageView.setOnTouchListener(new OnTouchListener() {
 
 			int initialX, initialY;
 			float initialTouchX, initialTouchY;
@@ -94,7 +96,8 @@ public class BubbleDrawerService extends Service {
 					return true;
 
 				case MotionEvent.ACTION_MOVE:
-					mChatHeadTextView.setVisibility(View.GONE);
+					mChatContactTextView.setVisibility(View.GONE);
+					mChatTextView.setVisibility(View.GONE);
 					parameters.x = initialX
 							+ (int) (event.getRawX() - initialTouchX);
 					parameters.y = initialY
@@ -111,17 +114,21 @@ public class BubbleDrawerService extends Service {
 
 					if (parameters.x < screenWidth / 2) {
 						mLayout.removeAllViews();
-						mLayout.addView(mChatHeadImageView);
-						mLayout.addView(mChatHeadTextView);
-						mChatHeadTextView.setVisibility(View.VISIBLE);
-						mChatHeadTextView.setText(_message);
+						mLayout.addView(mChaContactImageView);
+						mLayout.addView(mChatContactTextView);
+						mChatContactTextView.setVisibility(View.VISIBLE);
+						mChatContactTextView.setText(_senderNum);
+						mChatTextView.setVisibility(View.VISIBLE);
+						mChatTextView.setText(_message);
 
 					} else { // Set textView to left of image
 						mLayout.removeAllViews();
-						mLayout.addView(mChatHeadTextView);
-						mLayout.addView(mChatHeadImageView);
-						mChatHeadTextView.setVisibility(View.VISIBLE);
-						mChatHeadTextView.setText(_message);
+						mLayout.addView(mChatContactTextView);
+						mLayout.addView(mChaContactImageView);
+						mChatContactTextView.setVisibility(View.VISIBLE);
+						mChatContactTextView.setText(_senderNum);
+						mChatTextView.setVisibility(View.VISIBLE);
+						mChatTextView.setText(_message);
 					}
 					return true;
 
