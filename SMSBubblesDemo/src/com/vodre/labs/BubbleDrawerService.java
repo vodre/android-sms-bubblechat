@@ -4,10 +4,14 @@ package com.vodre.labs;
 import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.Contacts.People;
+import android.provider.ContactsContract;
+import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
@@ -70,6 +74,7 @@ public class BubbleDrawerService extends Service {
 		
 		
 		mChatContactTextView.setText(_senderNum + ": ");
+		mChatContactTextView.setText(getContactNamebyNumber(_senderNum));
 		mChatTextView.setText(_message);
 
 		final WindowManager.LayoutParams parameters = new WindowManager.LayoutParams(
@@ -139,6 +144,23 @@ public class BubbleDrawerService extends Service {
 
 		mWindowManager.addView(mChatHead, parameters);
 
+	}
+
+	private CharSequence getContactNamebyNumber(String smsNumber) {
+		Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
+		String contact_name = smsNumber;
+		while (phones.moveToNext())
+		{
+		  String name=phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+		  String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)); 
+	
+		  if(PhoneNumberUtils.compare(phoneNumber, smsNumber)){
+			  contact_name = name;
+		  }
+
+		}
+		phones.close();
+		return contact_name;
 	}
 
 	@Override
