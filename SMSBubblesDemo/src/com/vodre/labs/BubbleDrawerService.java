@@ -1,16 +1,24 @@
 package com.vodre.labs;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import android.annotation.SuppressLint;
 import android.app.Service;
+import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.Contacts.People;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 import android.view.Display;
@@ -37,11 +45,15 @@ public class BubbleDrawerService extends Service {
 	private static int screenHeight;
 	private static String _message = "";
 	private static String _senderNum = "";
+	private static final String[] PHOTO_ID_PROJECTION = new String[] {ContactsContract.Contacts.PHOTO_ID};
+	private static final String[] PHOTO_BITMAP_PROJECTION = new String[] {ContactsContract.CommonDataKinds.Photo.PHOTO};
 
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
 	}
+
+
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
@@ -71,11 +83,10 @@ public class BubbleDrawerService extends Service {
 		mChatTextView = (TextView) mChatHead.findViewById(R.id.text_textview);
 		mLayout = (LinearLayout) mChatHead.findViewById(R.id.chathead_linearlayout);
 		layout_text = (LinearLayout)mChatHead.findViewById(R.id.layout_text);
-		
-		
-		mChatContactTextView.setText(_senderNum + ": ");
-		mChatContactTextView.setText(getContactNamebyNumber(_senderNum));
-		mChatTextView.setText(_message);
+
+
+		setContactView();
+
 
 		final WindowManager.LayoutParams parameters = new WindowManager.LayoutParams(
 				WindowManager.LayoutParams.WRAP_CONTENT, // Width
@@ -146,17 +157,75 @@ public class BubbleDrawerService extends Service {
 
 	}
 
+	private void setContactView() {
+		mChatContactTextView.setText(getContactNamebyNumber(_senderNum)); ///set Contact Name in TextView
+		mChatTextView.setText(_message);//set Message in TextView
+
+		final Integer thumbnailId = fetchThumbnailId(_senderNum);
+		if (thumbnailId != null) {
+			final Bitmap thumbnail = fetchThumbnail(thumbnailId);
+			if (thumbnail != null) {
+				mChaContactImageView.setImageBitmap(thumbnail);
+			}
+		}
+
+	}
+
+
+
+	private Integer fetchThumbnailId(String phoneNumber) {
+
+		final Uri uri = Uri.withAppendedPath(ContactsContract.CommonDataKinds.Phone.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+		final Cursor cursor = getContentResolver().query(uri, PHOTO_ID_PROJECTION, null, null, ContactsContract.Contacts.DISPLAY_NAME + " ASC");
+
+		try {
+			Integer thumbnailId = null;
+			if (cursor.moveToFirst()) {
+				thumbnailId = cursor.getInt(cursor.getColumnIndex(ContactsContract.Contacts.PHOTO_ID));
+			}
+			return thumbnailId;
+		}
+		finally {
+			cursor.close();
+		}
+
+	}
+
+
+	final Bitmap fetchThumbnail(final int thumbnailId) {
+
+		final Uri uri = ContentUris.withAppendedId(ContactsContract.Data.CONTENT_URI, thumbnailId);
+		final Cursor cursor = getContentResolver().query(uri, PHOTO_BITMAP_PROJECTION, null, null, null);
+
+		try {
+			Bitmap thumbnail = null;
+			if (cursor.moveToFirst()) {
+				final byte[] thumbnailBytes = cursor.getBlob(0);
+				if (thumbnailBytes != null) {
+					thumbnail = BitmapFactory.decodeByteArray(thumbnailBytes, 0, thumbnailBytes.length);
+				}
+			}
+			return thumbnail;
+		}
+		finally {
+			cursor.close();
+
+		}
+	}
+
+
+
 	private CharSequence getContactNamebyNumber(String smsNumber) {
 		Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
 		String contact_name = smsNumber;
 		while (phones.moveToNext())
 		{
-		  String name=phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-		  String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)); 
-	
-		  if(PhoneNumberUtils.compare(phoneNumber, smsNumber)){
-			  contact_name = name;
-		  }
+			String name=phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+			String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)); 
+
+			if(PhoneNumberUtils.compare(phoneNumber, smsNumber)){
+				contact_name = name;
+			}
 
 		}
 		phones.close();
