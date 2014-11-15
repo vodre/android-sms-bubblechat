@@ -158,6 +158,7 @@ public class BubbleDrawerService extends Service {
 	}
 
 	private void setContactView() {
+		_senderNum = _senderNum + " dice:";
 		mChatContactTextView.setText(getContactNamebyNumber(_senderNum)); ///set Contact Name in TextView
 		mChatTextView.setText(_message);//set Message in TextView
 
